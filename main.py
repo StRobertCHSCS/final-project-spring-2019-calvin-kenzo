@@ -3,10 +3,11 @@ import arcade
 # --- Constants ---
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-MOVEMENT_SPEED = 4
+MOVEMENT_SPEED = 2.5
 LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED = False, False, False, False
 PAGE = 1
 FONT_SIZE = 15
+
 
 class Menu:
     def __init__(self):
@@ -58,46 +59,13 @@ class Instructions:
         arcade.draw_text("Press space to start the game", 175, 100, arcade.color.WHITE, FONT_SIZE + 10)
         arcade.finish_render()
 
-class Bone:
+
+class Spear:
     pass
+
 
 class Attacks:
     pass
-class Heart:
-    def __init__(self, position_x, position_y, change_x, change_y):
-
-        # Take the parameters of the init function above, and create instance variables out of them.
-        self.position_x = position_x
-        self.position_y = position_y
-        self.change_x = change_x
-        self.change_y = change_y
-
-        self.texture1 = arcade.load_texture("images/heart.png")
-        self.scale = 0.025
-
-    def draw(self):
-        arcade.start_render()
-        arcade.draw_texture_rectangle(self.position_x, self.position_y, self.scale * self.texture1.width,
-                                      self.scale * self.texture1.height, self.texture1, 0)
-        arcade.finish_render()
-
-    def update(self):
-        # Move the heart
-        self.position_y += self.change_y
-        self.position_x += self.change_x
-
-        # See if the heart hit the edge of the screen. If so, change direction
-        if self.position_x < 40:
-            self.position_x = 40
-
-        if self.position_x > SCREEN_WIDTH - 40:
-            self.position_x = SCREEN_WIDTH - 40
-
-        if self.position_y < 40:
-            self.position_y = 40
-
-        if self.position_y > SCREEN_HEIGHT - 40:
-            self.position_y = SCREEN_HEIGHT - 40
 
 
 class MyGame(arcade.Window):
@@ -106,49 +74,56 @@ class MyGame(arcade.Window):
         # Call the parent class's init function
         super().__init__(width, height, title)
 
-        self.heart_x = 250
-        self.heart_y = 250
-
         # Create Menu Screen
         self.menu = Menu()
 
         # Create Instructions Screen
-        self.instuctions = Instructions()
+        self.instructions = Instructions()
 
-        # Create heart
-        self.heart = Heart(self.heart_x, self.heart_y, 0, 0)
+    def setup(self):
+        """ Set up the game and initialize the variables. """
+
+        # Sprite lists
+        self.player_list = arcade.SpriteList()
+        self.attack_list = arcade.SpriteList()
+
+        # Score
+        self.score = 0
+
+        # Set up the player
+        # Character image from Undertale Wiki
+        self.player_sprite = arcade.Sprite("images/heart.png", 0.025)
+        self.player_sprite.center_x = 400
+        self.player_sprite.center_y = 300
+        self.player_list.append(self.player_sprite)
 
     def on_draw(self):
         arcade.start_render()
         if PAGE == 1:
             self.menu.draw()
         elif PAGE == 2:
-            self.instuctions.draw()
+            self.instructions.draw()
         elif PAGE == 3:
-            self.heart.draw()
+            self.player_list.draw()
 
     def update(self, delta_time):
-        self.heart.update()
 
         # Check if the heart is supposed to move
-        if LEFT_PRESSED is True:
-            self.heart.change_x = -MOVEMENT_SPEED
-        elif RIGHT_PRESSED is True:
-            self.heart.change_x = MOVEMENT_SPEED
-        else:
-            self.heart.change_x = 0
-        if UP_PRESSED is True:
-            self.heart.change_y = MOVEMENT_SPEED
-        elif DOWN_PRESSED is True:
-            self.heart.change_y = -MOVEMENT_SPEED
-        else:
-            self.heart.change_y = 0
+        if LEFT_PRESSED is True and self.player_sprite.center_x > 40:
+            self.player_sprite.center_x -= MOVEMENT_SPEED
+        elif RIGHT_PRESSED is True and self.player_sprite.center_x < SCREEN_WIDTH - 40:
+            self.player_sprite.center_x += MOVEMENT_SPEED
+        if UP_PRESSED is True and self.player_sprite.center_y < SCREEN_HEIGHT - 40:
+            self.player_sprite.center_y += MOVEMENT_SPEED
+        elif DOWN_PRESSED is True and self.player_sprite.center_y > 40:
+            self.player_sprite.center_y -= MOVEMENT_SPEED
+
+
 
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
         global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED, PAGE
-        if key == arcade.key.SPACE:
-            PAGE = 3
+
         if key == arcade.key.RIGHT:
             RIGHT_PRESSED = True
         elif key == arcade.key.LEFT:
@@ -168,6 +143,7 @@ class MyGame(arcade.Window):
     def on_key_release(self, key, modifiers):
         """ Called whenever a user releases a key. """
         global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED
+
         if key == arcade.key.RIGHT:
             RIGHT_PRESSED = False
         elif key == arcade.key.LEFT:
@@ -180,6 +156,7 @@ class MyGame(arcade.Window):
 
 def main():
     window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, "CPT FINAL")
+    window.setup()
     arcade.run()
 
 
