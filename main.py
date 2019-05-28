@@ -60,6 +60,26 @@ class Instructions:
         arcade.finish_render()
 
 
+class GameOver:
+    def __init__(self):
+        # Broken heart image from Redbubble.com
+        self.texture = arcade.load_texture("images/broken_heart.jpg")
+        self.texture_heart = arcade.load_texture("images/heart.png")
+        self.scale = 0.1
+        self.counter = 0
+
+    def draw(self):
+        self.counter += 1
+        if self.counter <= 45:
+            arcade.draw_texture_rectangle(400, 300, self.scale * self.texture_heart.width,
+                                          self.scale * self.texture_heart.height, self.texture_heart, 0)
+        elif self.counter > 46:
+            arcade.draw_texture_rectangle(400, 300, self.texture.width,
+                                          self.texture.height, self.texture, 0)
+            if self.counter >= 80:
+                arcade.draw_text("GAME OVER", 210, 525, arcade.color.WHITE, 50)
+
+
 class Spear:
     pass
 
@@ -79,6 +99,9 @@ class MyGame(arcade.Window):
 
         # Create Instructions Screen
         self.instructions = Instructions()
+
+        # Create Game Over screen
+        self.game_over = GameOver()
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -105,6 +128,8 @@ class MyGame(arcade.Window):
             self.instructions.draw()
         elif PAGE == 3:
             self.player_list.draw()
+        elif PAGE == 4:
+            self.game_over.draw()
 
     def update(self, delta_time):
 
