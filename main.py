@@ -7,6 +7,10 @@ MOVEMENT_SPEED = 2.5
 LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED = False, False, False, False
 PAGE = 1
 FONT_SIZE = 15
+RECT_CENTER_X = 400
+RECT_CENTER_Y = 200
+RECT_DISTANCE_FROM_CENTER = 250
+PLAYER_MOVEMENT_BORDERS = 20
 
 
 class Menu:
@@ -33,7 +37,6 @@ class Instructions:
         self.texture_heart = arcade.load_texture("images/heart.png")
         self.texture_heart_purple = arcade.load_texture("images/heart_purple.png")
         self.scale = 0.025
-
 
     def draw(self):
         arcade.start_render()
@@ -80,7 +83,7 @@ class GameOver:
                 arcade.draw_text("GAME OVER", 210, 525, arcade.color.WHITE, 50)
 
 
-class Spear:
+class Spear(arcade.Sprite):
     pass
 
 
@@ -108,7 +111,7 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
-        self.attack_list = arcade.SpriteList()
+        self.spear_list = arcade.SpriteList()
 
         # Score
         self.score = 0
@@ -117,7 +120,7 @@ class MyGame(arcade.Window):
         # Character image from Undertale Wiki
         self.player_sprite = arcade.Sprite("images/heart.png", 0.025)
         self.player_sprite.center_x = 400
-        self.player_sprite.center_y = 300
+        self.player_sprite.center_y = 200
         self.player_list.append(self.player_sprite)
 
     def on_draw(self):
@@ -128,22 +131,26 @@ class MyGame(arcade.Window):
             self.instructions.draw()
         elif PAGE == 3:
             self.player_list.draw()
+            arcade.draw_rectangle_outline(RECT_CENTER_X, RECT_CENTER_Y, RECT_DISTANCE_FROM_CENTER,
+                                          RECT_DISTANCE_FROM_CENTER, arcade.color.WHITE, 1)
         elif PAGE == 4:
             self.game_over.draw()
 
     def update(self, delta_time):
 
         # Check if the heart is supposed to move
-        if LEFT_PRESSED is True and self.player_sprite.center_x > 40:
+        if (LEFT_PRESSED is True and self.player_sprite.center_x
+                > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_x -= MOVEMENT_SPEED
-        elif RIGHT_PRESSED is True and self.player_sprite.center_x < SCREEN_WIDTH - 40:
+        elif (RIGHT_PRESSED is True and self.player_sprite.center_x
+                < RECT_CENTER_X + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_x += MOVEMENT_SPEED
-        if UP_PRESSED is True and self.player_sprite.center_y < SCREEN_HEIGHT - 40:
+        if (UP_PRESSED is True and self.player_sprite.center_y
+                < RECT_CENTER_Y + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_y += MOVEMENT_SPEED
-        elif DOWN_PRESSED is True and self.player_sprite.center_y > 40:
+        elif (DOWN_PRESSED is True and self.player_sprite.center_y
+                > RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_y -= MOVEMENT_SPEED
-
-
 
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
