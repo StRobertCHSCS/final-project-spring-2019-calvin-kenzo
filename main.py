@@ -7,6 +7,11 @@ MOVEMENT_SPEED = 2.5
 LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED = False, False, False, False
 PAGE = 1
 FONT_SIZE = 15
+RECT_CENTER_X = 400
+RECT_CENTER_Y = 200
+RECT_DISTANCE_FROM_CENTER = 250
+PLAYER_MOVEMENT_BORDERS = 20
+SPEAR_COUNT1 = 7
 
 
 class Menu:
@@ -20,7 +25,7 @@ class Menu:
                                       self.texture.height, self.texture, 0)
 
         arcade.draw_text("Press space to play", 225, 200, arcade.color.WHITE, 2*FONT_SIZE)
-        arcade.draw_text("Press I to instructions", 200, 125, arcade.color.WHITE, 2*FONT_SIZE)
+        arcade.draw_text("Press I for instructions", 200, 125, arcade.color.WHITE, 2*FONT_SIZE)
 
         arcade.finish_render()
 
@@ -29,11 +34,10 @@ class Instructions:
     def __init__(self):
         self.texture = arcade.load_texture("images/ruins.png")
 
-        # Heart image from Undertale Wiki.  Purple heart colour pallet change done by Calvin.
+        # Heart image from Undertale Wiki.  Purple heart pallet change done by Calvin.
         self.texture_heart = arcade.load_texture("images/heart.png")
         self.texture_heart_purple = arcade.load_texture("images/heart_purple.png")
         self.scale = 0.025
-
 
     def draw(self):
         arcade.start_render()
@@ -80,9 +84,9 @@ class GameOver:
                 arcade.draw_text("GAME OVER", 210, 525, arcade.color.WHITE, 50)
 
 
-class Spear:
-    pass
-
+class Spear(arcade.Sprite):
+    def update(self):
+        self.center_x -= 3
 
 class Attacks:
     pass
@@ -103,22 +107,43 @@ class MyGame(arcade.Window):
         # Create Game Over screen
         self.game_over = GameOver()
 
+        self.player_list = None
+        self.spear_list1 = None
+        self.player_sprite = None
+
+
     def setup(self):
         """ Set up the game and initialize the variables. """
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
-        self.attack_list = arcade.SpriteList()
-
-        # Score
-        self.score = 0
+        self.spear_list1 = arcade.SpriteList()
 
         # Set up the player
-        # Character image from Undertale Wiki
+        # Heart image from Undertale Wiki
         self.player_sprite = arcade.Sprite("images/heart.png", 0.025)
         self.player_sprite.center_x = 400
-        self.player_sprite.center_y = 300
+        self.player_sprite.center_y = 200
         self.player_list.append(self.player_sprite)
+
+        self.size = 0.25
+        self.center_x = 600
+        self.center_y = 95
+
+        for i in range(SPEAR_COUNT1):
+            # Set up the spear
+            # Image self made
+            spear = Spear("images/spear_up.png", self.size)
+            # Center the spear
+            spear.center_x = self.center_x
+            spear.center_y = self.center_y
+            # Add spear to the list of spears
+            self.spear_list1.append(spear)
+            # Change size and position of spear
+            self.size += 0.05
+            self.center_x += 20 + 5*i
+            spear.center_y += 25 + 5*i
+
 
     def on_draw(self):
         arcade.start_render()
@@ -128,23 +153,35 @@ class MyGame(arcade.Window):
             self.instructions.draw()
         elif PAGE == 3:
             self.player_list.draw()
+            self.spear_list1.draw()
+            arcade.draw_rectangle_outline(RECT_CENTER_X, RECT_CENTER_Y, RECT_DISTANCE_FROM_CENTER,
+                                          RECT_DISTANCE_FROM_CENTER, arcade.color.WHITE, 1)
         elif PAGE == 4:
             self.game_over.draw()
 
     def update(self, delta_time):
-
+        global PAGE
         # Check if the heart is supposed to move
-        if LEFT_PRESSED is True and self.player_sprite.center_x > 40:
+        if (LEFT_PRESSED is True and self.player_sprite.center_x
+                > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_x -= MOVEMENT_SPEED
-        elif RIGHT_PRESSED is True and self.player_sprite.center_x < SCREEN_WIDTH - 40:
+        if (RIGHT_PRESSED is True and self.player_sprite.center_x
+                < RECT_CENTER_X + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_x += MOVEMENT_SPEED
-        if UP_PRESSED is True and self.player_sprite.center_y < SCREEN_HEIGHT - 40:
+        if (UP_PRESSED is True and self.player_sprite.center_y
+                < RECT_CENTER_Y + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_y += MOVEMENT_SPEED
-        elif DOWN_PRESSED is True and self.player_sprite.center_y > 40:
+        if (DOWN_PRESSED is True and self.player_sprite.center_y
+                > RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
             self.player_sprite.center_y -= MOVEMENT_SPEED
 
+        self.spear_list1.update()
 
-
+        # Generate a list of all sprites that collided with the player.
+        coins_hit_list = arcade.check_for_collision_with_list(self.player_sprite,
+                                                              self.spear_list1)
+        if len(coins_hit_list) > 0:
+            PAGE = 4
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
         global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED, PAGE
