@@ -12,6 +12,7 @@ RECT_CENTER_Y = 200
 RECT_DISTANCE_FROM_CENTER = 250
 PLAYER_MOVEMENT_BORDERS = 20
 SPEAR_COUNT1 = 7
+SPEAR_COUNT2 = 5
 
 
 class Menu:
@@ -84,12 +85,14 @@ class GameOver:
                 arcade.draw_text("GAME OVER", 210, 525, arcade.color.WHITE, 50)
 
 
-class Spear(arcade.Sprite):
+class Spears1(arcade.Sprite):
     def update(self):
-        self.center_x -= 3
+        self.center_x -= 4
 
-class Attacks:
-    pass
+
+class Spears2(arcade.Sprite):
+    def update(self):
+        self.center_x += 3
 
 
 class MyGame(arcade.Window):
@@ -110,6 +113,7 @@ class MyGame(arcade.Window):
         # Initialize variables used in the setup function
         self.player_list = None
         self.spear_list1 = None
+        self.spear_list2 = None
         self.player_sprite = None
         self.size = None
         self.center_x = None
@@ -121,6 +125,7 @@ class MyGame(arcade.Window):
         # Sprite lists
         self.player_list = arcade.SpriteList()
         self.spear_list1 = arcade.SpriteList()
+        self.spear_list2 = arcade.SpriteList()
 
         # Set up the player
         # Heart image from Undertale Wiki
@@ -129,14 +134,15 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 200
         self.player_list.append(self.player_sprite)
 
+        # Set up variables for spear_list1
         self.size = 0.3
-        self.center_x = 600
-        self.center_y = 95
+        self.center_x = 700
+        self.center_y = 75
 
         for i in range(SPEAR_COUNT1):
             # Set up the spear
             # Image self made
-            spear = Spear("images/spear_up.png", self.size)
+            spear = Spears1("images/spear_up.png", self.size)
             # Center the spear
             spear.center_x = self.center_x
             spear.center_y = self.center_y
@@ -144,9 +150,27 @@ class MyGame(arcade.Window):
             self.spear_list1.append(spear)
             # Change size and position of spear
             self.size += 0.05
-            self.center_x += 20 + 5*i
+            self.center_x += 30 + 5*i
             spear.center_y += 25 + 5*i
 
+        # Set up variables for spear_list2
+        self.size = 0.3
+        self.center_x = 50
+        self.center_y = 330
+
+        for i in range(SPEAR_COUNT2):
+            # Set up the spear
+            # Image self made
+            spear = Spears2("images/spear_down.png", self.size)
+            # Center the spear
+            spear.center_x = self.center_x
+            spear.center_y = self.center_y
+            # Add spear to the list of spears
+            self.spear_list1.append(spear)
+            # Change size and position of spear
+            self.size += 0.05
+            self.center_x += 30 + 5*i
+            spear.center_y -= 25 + 5*i
 
     def on_draw(self):
         arcade.start_render()
@@ -179,11 +203,15 @@ class MyGame(arcade.Window):
             self.player_sprite.center_y -= MOVEMENT_SPEED
 
         self.spear_list1.update()
+        self.spear_list2.update()
 
         # Generate a list of all sprites that collided with the player.
-        coins_hit_list = arcade.check_for_collision_with_list(self.player_sprite,
+        player_hit_list1 = arcade.check_for_collision_with_list(self.player_sprite,
                                                               self.spear_list1)
-        if len(coins_hit_list) > 0:
+        player_hit_list2 = arcade.check_for_collision_with_list(self.player_sprite,
+                                                              self.spear_list1)
+
+        if len(player_hit_list1) > 0 or len(player_hit_list2) > 0:
             PAGE = 4
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
