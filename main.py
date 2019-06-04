@@ -107,10 +107,13 @@ class MyGame(arcade.Window):
         # Create Game Over screen
         self.game_over = GameOver()
 
+        # Initialize variables used in the setup function
         self.player_list = None
         self.spear_list1 = None
         self.player_sprite = None
-
+        self.size = None
+        self.center_x = None
+        self.center_y = None
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -126,7 +129,7 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 200
         self.player_list.append(self.player_sprite)
 
-        self.size = 0.25
+        self.size = 0.3
         self.center_x = 600
         self.center_y = 95
 
