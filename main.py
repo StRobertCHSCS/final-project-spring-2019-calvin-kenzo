@@ -13,9 +13,10 @@ RECT_DISTANCE_FROM_CENTER = 250
 PLAYER_MOVEMENT_BORDERS = 20
 SPEAR_COUNT1 = 7
 SPEAR_COUNT2 = 5
-
 TIMER = 300
-TIMER_INCRIMENT = 0
+TIMER_INCREMENT = 0
+
+
 class Menu:
     def __init__(self):
         # Ruins image from Reddit user u/Minoz99
@@ -190,7 +191,7 @@ class MyGame(arcade.Window):
             self.game_over.draw()
 
     def update(self, delta_time):
-        global PAGE, TIMER, TIMER_INCRIMENT
+        global PAGE, TIMER, TIMER_INCREMENT
         # Check if the heart is supposed to move
         if (LEFT_PRESSED is True and self.player_sprite.center_x
                 > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
@@ -216,10 +217,13 @@ class MyGame(arcade.Window):
 
         if len(player_hit_list1) > 0 or len(player_hit_list2) > 0:
             PAGE = 4
-        TIMER_INCRIMENT += 1
-        if TIMER_INCRIMENT >= 60:
+        TIMER_INCREMENT += 1
+        if TIMER_INCREMENT >= 60:
             TIMER -= 1
-            TIMER_INCRIMENT = 0
+            TIMER_INCREMENT = 0
+        if TIMER == 0:
+            PAGE = 5
+
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
         global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED, PAGE
