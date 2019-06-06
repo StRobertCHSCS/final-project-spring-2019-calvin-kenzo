@@ -14,7 +14,8 @@ PLAYER_MOVEMENT_BORDERS = 20
 SPEAR_COUNT1 = 7
 SPEAR_COUNT2 = 5
 
-
+TIMER = 300
+TIMER_INCRIMENT = 0
 class Menu:
     def __init__(self):
         # Ruins image from Reddit user u/Minoz99
@@ -181,13 +182,15 @@ class MyGame(arcade.Window):
         elif PAGE == 3:
             self.player_list.draw()
             self.spear_list1.draw()
+            output = f"timer: {TIMER}"
+            arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
             arcade.draw_rectangle_outline(RECT_CENTER_X, RECT_CENTER_Y, RECT_DISTANCE_FROM_CENTER,
                                           RECT_DISTANCE_FROM_CENTER, arcade.color.WHITE, 1)
         elif PAGE == 4:
             self.game_over.draw()
 
     def update(self, delta_time):
-        global PAGE
+        global PAGE, TIMER, TIMER_INCRIMENT
         # Check if the heart is supposed to move
         if (LEFT_PRESSED is True and self.player_sprite.center_x
                 > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
@@ -213,6 +216,10 @@ class MyGame(arcade.Window):
 
         if len(player_hit_list1) > 0 or len(player_hit_list2) > 0:
             PAGE = 4
+        TIMER_INCRIMENT += 1
+        if TIMER_INCRIMENT >= 60:
+            TIMER -= 1
+            TIMER_INCRIMENT = 0
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
         global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED, PAGE
