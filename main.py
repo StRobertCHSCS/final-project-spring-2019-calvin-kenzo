@@ -16,6 +16,12 @@ SPEAR_COUNT2 = 5
 SPIKE_COUNT1 = 2
 TIMER = 30
 TIMER_INCREMENT = 0
+GRAVITY_ON = False
+CAN_JUMP = True
+GRAVITY = 4
+AIR_TIME = 0
+JUMP = False
+JUMP_HEIGHT = 3
 
 
 class Menu:
@@ -123,7 +129,7 @@ class MyGame(arcade.Window):
         self.spear_list6 = None
         self.spear_list7 = None
         self.spike_list1 = None
-        self.player_sprite = None
+        self.player_sprite_red = None
         self.size = None
         self.center_x = None
         self.center_y = None
@@ -146,10 +152,15 @@ class MyGame(arcade.Window):
 
         # Set up the player
         # Heart image from Undertale Wiki
-        self.player_sprite = arcade.Sprite("images/heart.png", 0.025)
-        self.player_sprite.center_x = 400
-        self.player_sprite.center_y = 200
-        self.player_list.append(self.player_sprite)
+        self.player_sprite_red = arcade.Sprite("images/heart.png", 0.025)
+        self.player_sprite_red.center_x = 400
+        self.player_sprite_red.center_y = 200
+        self.player_list.append(self.player_sprite_red)
+
+        self.player_sprite_purple = arcade.Sprite("images/heart_purple.png", 0.025)
+        self.player_sprite_purple.center_x = self.player_sprite_red.center_x
+        self.player_sprite_purple.center_y = self.player_sprite_red.center_y
+        self.player_list.append(self.player_sprite_purple)
 
         # Set up variables for spear_list1
         self.size = 0.3
@@ -212,7 +223,10 @@ class MyGame(arcade.Window):
         elif PAGE == 2:
             self.instructions.draw()
         elif PAGE == 3:
-            self.player_list.draw()
+            if GRAVITY_ON is False:
+                self.player_sprite_red.draw()
+            else:
+                self.player_sprite_purple.draw()
 
             if TIMER < 29:
                 self.spear_list1.draw()
@@ -226,32 +240,60 @@ class MyGame(arcade.Window):
             self.game_over.draw()
 
     def update(self, delta_time):
-        global PAGE, TIMER, TIMER_INCREMENT
+        global PAGE, TIMER, TIMER_INCREMENT, AIR_TIME, JUMP, CAN_JUMP
         # Check if the heart is supposed to move
-        if (LEFT_PRESSED is True and self.player_sprite.center_x
-                > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
-            self.player_sprite.center_x -= MOVEMENT_SPEED
-        if (RIGHT_PRESSED is True and self.player_sprite.center_x
-                < RECT_CENTER_X + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
-            self.player_sprite.center_x += MOVEMENT_SPEED
-        if (UP_PRESSED is True and self.player_sprite.center_y
-                < RECT_CENTER_Y + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
-            self.player_sprite.center_y += MOVEMENT_SPEED
-        if (DOWN_PRESSED is True and self.player_sprite.center_y
-                > RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
-            self.player_sprite.center_y -= MOVEMENT_SPEED
+        # Move red heart
+        if GRAVITY_ON is False:
+            if (LEFT_PRESSED is True and self.player_sprite_red.center_x
+                    > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
+                self.player_sprite_red.center_x -= MOVEMENT_SPEED
+            if (RIGHT_PRESSED is True and self.player_sprite_red.center_x
+                    < RECT_CENTER_X + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
+                self.player_sprite_red.center_x += MOVEMENT_SPEED
+            if (UP_PRESSED is True and self.player_sprite_red.center_y
+                    < RECT_CENTER_Y + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
+                self.player_sprite_red.center_y += MOVEMENT_SPEED
+            if (DOWN_PRESSED is True and self.player_sprite_red.center_y
+                    > RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
+                self.player_sprite_red.center_y -= MOVEMENT_SPEED
+        else:
+            if (LEFT_PRESSED is True and self.player_sprite_purple.center_x
+                    > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
+                self.player_sprite_purple.center_x -= MOVEMENT_SPEED
+            if (RIGHT_PRESSED is True and self.player_sprite_purple.center_x
+                    < RECT_CENTER_X + RECT_DISTANCE_FROM_CENTER/2 - PLAYER_MOVEMENT_BORDERS):
+                self.player_sprite_purple.center_x += MOVEMENT_SPEED
+            if (JUMP is False and GRAVITY_ON is True and self.player_sprite_purple.center_y
+                    >= (RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER / 2 + PLAYER_MOVEMENT_BORDERS)):
+                self.player_sprite_purple.center_y -= GRAVITY
+            if JUMP is True:
+                self.player_sprite_purple.center_y += JUMP_HEIGHT
+                AIR_TIME += 1
+            if AIR_TIME > 45:
+                JUMP = False
+            if (self.player_sprite_purple.center_y
+                    <= (RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER / 2 + PLAYER_MOVEMENT_BORDERS)):
+                CAN_JUMP = True
+                AIR_TIME = 0
 
         if TIMER < 28:
             self.spear_list1.update()
             self.spear_list2.update()
 
+        if GRAVITY_ON is False:
+            self.player_sprite_purple.center_x = self.player_sprite_red.center_x
+            self.player_sprite_purple.center_y = self.player_sprite_red.center_y
+        else:
+            self.player_sprite_red.center_x = self.player_sprite_purple.center_y
+            self.player_sprite_red.center_y = self.player_sprite_purple.center_y
+
         # Generate a list of all sprites that collided with the player.
-        player_hit_list_spear1 = arcade.check_for_collision_with_list(self.player_sprite,
+        player_hit_list_spear1 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list1)
-        player_hit_list_spear2 = arcade.check_for_collision_with_list(self.player_sprite,
+        player_hit_list_spear2 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list2)
 
-        player_hit_list_spike1 = arcade.check_for_collision_with_list(self.player_sprite,
+        player_hit_list_spike1 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spike_list1)
 
         if len(player_hit_list_spear1) > 0 or len(player_hit_list_spear2) > 0 or len(player_hit_list_spike1) > 0:
@@ -264,16 +306,23 @@ class MyGame(arcade.Window):
             if TIMER == 0:
                 PAGE = 5
 
+
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
-        global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED, PAGE
+        global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, DOWN_PRESSED, PAGE, CAN_JUMP, JUMP, GRAVITY_ON
 
         if key == arcade.key.RIGHT:
             RIGHT_PRESSED = True
         elif key == arcade.key.LEFT:
             LEFT_PRESSED = True
         if key == arcade.key.UP:
-            UP_PRESSED = True
+            if (GRAVITY_ON is True and CAN_JUMP is True and JUMP is False and
+                    self.player_sprite_purple.center_y <= (RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER / 2
+                                                           + PLAYER_MOVEMENT_BORDERS)):
+                CAN_JUMP = False
+                JUMP = True
+            elif GRAVITY_ON is False:
+                UP_PRESSED = True
         elif key == arcade.key.DOWN:
             DOWN_PRESSED = True
 
@@ -283,6 +332,9 @@ class MyGame(arcade.Window):
             PAGE = 2
         if PAGE == 2 and key == arcade.key.SPACE:
             PAGE = 3
+
+        if key == 105:
+            GRAVITY_ON = True
 
     def on_key_release(self, key, modifiers):
         """ Called whenever a user releases a key. """
