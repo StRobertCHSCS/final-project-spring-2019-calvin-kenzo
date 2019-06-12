@@ -13,8 +13,10 @@ RECT_DISTANCE_FROM_CENTER = 250
 PLAYER_MOVEMENT_BORDERS = 20
 SPEAR_COUNT1 = 7
 SPEAR_COUNT2 = 5
+SPEAR_COUNT3 = SPEAR_COUNT4 = 5
+
 SPIKE_COUNT1 = 2
-TIMER = 30
+TIMER = TIMER_INITIAL = 30
 TIMER_INCREMENT = 0
 GRAVITY_ON = False
 CAN_JUMP = True
@@ -104,6 +106,16 @@ class Spears2(arcade.Sprite):
         self.center_x += 3
 
 
+class Spears3(arcade.Sprite):
+    def update(self):
+        self.center_x += 3
+
+
+class Spears4(arcade.Sprite):
+    def update(self):
+        self.center_x -= 4
+
+
 class MyGame(arcade.Window):
 
     def __init__(self, width, height, title):
@@ -130,6 +142,7 @@ class MyGame(arcade.Window):
         self.spear_list7 = None
         self.spike_list1 = None
         self.player_sprite_red = None
+        self.player_sprite_purple = None
         self.size = None
         self.center_x = None
         self.center_y = None
@@ -168,10 +181,10 @@ class MyGame(arcade.Window):
         self.center_y = 75
 
         for i in range(SPEAR_COUNT1):
-            # Set up the spike
+            # Set up the spear
             # Image self made
             spear = Spears1("images/spear_up.png", self.size)
-            # Center the spike
+            # Center the spear
             spear.center_x = self.center_x
             spear.center_y = self.center_y
             # Add spear to the list of spears
@@ -200,6 +213,40 @@ class MyGame(arcade.Window):
             self.center_x += 30 + 5*i
             spear.center_y -= 25 + 5*i
 
+        # Set up variables for spear_list3
+        self.size = 0.3
+        self.center_x = -150
+        self.center_y = 100
+
+        for i in range(SPEAR_COUNT3):
+            # Set up the spear
+            # Image self made
+            spear = Spears3("images/spear_up.png", self.size)
+            # Center the spear
+            spear.center_x = self.center_x
+            spear.center_y = self.center_y
+            # Add spear to the list of spears
+            self.spear_list3.append(spear)
+            # Change position of spear
+            self.center_x += 30
+
+        # Set up variables for spear_list4
+        self.size = 0.4
+        self.center_x = 1200
+        self.center_y = 100
+
+        for i in range(SPEAR_COUNT4):
+            # Set up the spear
+            # Image self made
+            spear = Spears4("images/spear_up.png", self.size)
+            # Center the spear
+            spear.center_x = self.center_x
+            spear.center_y = self.center_y
+            # Add spear to the list of spears
+            self.spear_list4.append(spear)
+            # Change position of spear
+            self.center_x += 35
+
         self.size = 0.15
         self.center_x = 335
         self.center_y = 85
@@ -213,7 +260,6 @@ class MyGame(arcade.Window):
             spike.center_y = self.center_y
             # Add spear to the list of spears
             self.spike_list1.append(spike)
-            # Change size and position of spear
             self.center_x += 125
 
     def on_draw(self):
@@ -228,9 +274,16 @@ class MyGame(arcade.Window):
             else:
                 self.player_sprite_purple.draw()
 
-            if TIMER < 29:
-                self.spear_list1.draw()
-                self.spike_list1.draw()
+            if TIMER < TIMER_INITIAL - 1:
+                if TIMER > TIMER_INITIAL - 10:
+                    self.spear_list1.draw()
+                if TIMER >= TIMER_INITIAL - 6:
+                    self.spike_list1.draw()
+
+            if TIMER < TIMER_INITIAL - 8:
+                if TIMER > TIMER_INITIAL - 15:
+                    self.spear_list3.draw()
+                    self.spear_list4.draw()
 
             output = f"timer: {TIMER}"
             arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
@@ -240,7 +293,7 @@ class MyGame(arcade.Window):
             self.game_over.draw()
 
     def update(self, delta_time):
-        global PAGE, TIMER, TIMER_INCREMENT, AIR_TIME, JUMP, CAN_JUMP
+        global PAGE, TIMER, TIMER_INCREMENT, AIR_TIME, JUMP, CAN_JUMP, GRAVITY_ON
         # Check if the heart is supposed to move
         # Move red heart
         if GRAVITY_ON is False:
@@ -256,6 +309,7 @@ class MyGame(arcade.Window):
             if (DOWN_PRESSED is True and self.player_sprite_red.center_y
                     > RECT_CENTER_Y - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
                 self.player_sprite_red.center_y -= MOVEMENT_SPEED
+        # Move purple heart
         else:
             if (LEFT_PRESSED is True and self.player_sprite_purple.center_x
                     > RECT_CENTER_X - RECT_DISTANCE_FROM_CENTER/2 + PLAYER_MOVEMENT_BORDERS):
@@ -276,27 +330,49 @@ class MyGame(arcade.Window):
                 CAN_JUMP = True
                 AIR_TIME = 0
 
-        if TIMER < 28:
+        if TIMER < TIMER_INITIAL - 2 and TIMER > TIMER_INITIAL - 10:
             self.spear_list1.update()
             self.spear_list2.update()
+
+        if TIMER < TIMER_INITIAL - 8 and TIMER > TIMER_INITIAL - 15:
+            self.spear_list3.update()
+            self.spear_list4.update()
+
+        if TIMER == TIMER_INITIAL - 7:
+            GRAVITY_ON = True
+
+        if TIMER == TIMER_INITIAL - 15:
+            GRAVITY_ON = False
 
         if GRAVITY_ON is False:
             self.player_sprite_purple.center_x = self.player_sprite_red.center_x
             self.player_sprite_purple.center_y = self.player_sprite_red.center_y
         else:
-            self.player_sprite_red.center_x = self.player_sprite_purple.center_y
+            self.player_sprite_red.center_x = self.player_sprite_purple.center_x
             self.player_sprite_red.center_y = self.player_sprite_purple.center_y
 
         # Generate a list of all sprites that collided with the player.
+        # Only need to check collisions w/ red because coordinates are always the same
         player_hit_list_spear1 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list1)
         player_hit_list_spear2 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list2)
 
-        player_hit_list_spike1 = arcade.check_for_collision_with_list(self.player_sprite_red,
+        player_hit_list_spike1 = []
+
+        player_hit_list_spear3 = arcade.check_for_collision_with_list(self.player_sprite_red,
+                                                                      self.spear_list3)
+
+        player_hit_list_spear4 = arcade.check_for_collision_with_list(self.player_sprite_red,
+                                                                      self.spear_list4)
+
+        if TIMER >= TIMER_INITIAL - 6:
+            player_hit_list_spike1 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spike_list1)
 
-        if len(player_hit_list_spear1) > 0 or len(player_hit_list_spear2) > 0 or len(player_hit_list_spike1) > 0:
+        if (len(player_hit_list_spear1) > 0 or len(player_hit_list_spear2) > 0
+                or len(player_hit_list_spike1) > 0 or len(player_hit_list_spear3) > 0
+                or len(player_hit_list_spear4) > 0):
             PAGE = 4
         if PAGE == 3:
             TIMER_INCREMENT += 1
@@ -305,7 +381,6 @@ class MyGame(arcade.Window):
                 TIMER_INCREMENT = 0
             if TIMER == 0:
                 PAGE = 5
-
 
     def on_key_press(self, key, modifiers):
         """ Called whenever a user presses a key """
@@ -332,9 +407,6 @@ class MyGame(arcade.Window):
             PAGE = 2
         if PAGE == 2 and key == arcade.key.SPACE:
             PAGE = 3
-
-        if key == 105:
-            GRAVITY_ON = True
 
     def on_key_release(self, key, modifiers):
         """ Called whenever a user releases a key. """
