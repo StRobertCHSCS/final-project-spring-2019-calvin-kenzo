@@ -11,11 +11,11 @@ RECT_CENTER_X = 400
 RECT_CENTER_Y = 200
 RECT_DISTANCE_FROM_CENTER = 250
 PLAYER_MOVEMENT_BORDERS = 20
-SPEAR_COUNT1 = SPEAR_COUNT5 = 7
+SPEAR_COUNT1 = SPEAR_COUNT5 = SPEAR_COUNT6 = 7
 SPEAR_COUNT2 = 5
 SPEAR_COUNT3 = SPEAR_COUNT4 = 5
-
-SPIKE_COUNT1 = 2
+SPEAR_COUNT7 = 1
+SPIKE_COUNT = 2
 TIMER = TIMER_INITIAL = 30
 TIMER_INCREMENT = 0
 GRAVITY_ON = False
@@ -92,6 +92,7 @@ class GameOver:
             arcade.draw_texture_rectangle(400, 300, self.scale * self.texture_heart.width,
                                           self.scale * self.texture_heart.height, self.texture_heart, 0)
         elif self.counter > 46:
+            # Add sound effect
             arcade.draw_texture_rectangle(400, 300, self.texture.width,
                                           self.texture.height, self.texture, 0)
             if self.counter >= 80:
@@ -115,12 +116,23 @@ class Spears3(arcade.Sprite):
 
 class Spears4(arcade.Sprite):
     def update(self):
-        self.center_x -= 4
+        self.center_x -= 3.75
 
 
 class Spears5(arcade.Sprite):
     def update(self):
         self.center_y += 3.5
+
+
+class Spears6(arcade.Sprite):
+    def update(self):
+        self.center_y -= 2.8
+
+
+class Spears7(arcade.Sprite):
+    def update(self):
+        self.center_y += 0.6
+
 
 class MyGame(arcade.Window):
 
@@ -147,6 +159,7 @@ class MyGame(arcade.Window):
         self.spear_list6 = None
         self.spear_list7 = None
         self.spike_list1 = None
+        self.spike_list2 = None
         self.player_sprite_red = None
         self.player_sprite_purple = None
         self.size = None
@@ -168,6 +181,7 @@ class MyGame(arcade.Window):
         self.spear_list7 = arcade.SpriteList()
 
         self.spike_list1 = arcade.SpriteList()
+        self.spike_list2 = arcade.SpriteList()
 
         # Set up the player
         # Heart image from Undertale Wiki
@@ -270,19 +284,66 @@ class MyGame(arcade.Window):
             # Change position of spear
             self.center_x += 35
 
+        # Set up variables for spear_list6
+        self.size = 0.4
+        self.center_x = 300
+        self.center_y = 700
+
+        for i in range(SPEAR_COUNT6):
+            # Set up the spear
+            # Image self made
+            spear = Spears6("images/spear_down.png", self.size)
+            # Center the spear
+            spear.center_x = self.center_x
+            spear.center_y = self.center_y
+            # Add spear to the list of spears
+            self.spear_list6.append(spear)
+            # Change position of spear
+            self.center_x += 35
+
+        # Set up variables for spear_list7
+        self.size = 3
+        self.center_x = 400
+        self.center_y = -220
+
+        for i in range(SPEAR_COUNT7):
+            # Set up the spear
+            # Image self made
+            spear = Spears7("images/spear_up.png", self.size)
+            # Center the spear
+            spear.center_x = self.center_x
+            spear.center_y = self.center_y
+            # Add spear to the list of spears
+            self.spear_list7.append(spear)
+
         self.size = 0.15
         self.center_x = 335
         self.center_y = 85
 
-        for i in range(SPIKE_COUNT1):
+        for i in range(SPIKE_COUNT):
+            # Set up the spike
+            # Image from pngkit.com
+            spike = arcade.Sprite("images/spikes.png", self.size)
+            # Center the spike
+            spike.center_x = self.center_x
+            spike.center_y = self.center_y
+            # Add spike to the list of spikes
+            self.spike_list1.append(spike)
+            self.center_x += 125
+
+        self.size = 0.15
+        self.center_x = 335
+        self.center_y = 85
+
+        for i in range(SPIKE_COUNT):
             # Set up the spike
             # Image from pngkit.com
             spike = arcade.Sprite("images/spikes.png", self.size)
             # Center the spear
             spike.center_x = self.center_x
             spike.center_y = self.center_y
-            # Add spear to the list of spears
-            self.spike_list1.append(spike)
+            # Add spike to the list of spikes
+            self.spike_list2.append(spike)
             self.center_x += 125
 
     def on_draw(self):
@@ -310,6 +371,15 @@ class MyGame(arcade.Window):
             if TIMER < TIMER_INITIAL - 13:
                 if TIMER > TIMER_INITIAL - 15:
                     self.spear_list5.draw()
+
+            if TIMER < TIMER_INITIAL - 15:
+                if TIMER > TIMER_INITIAL - 19:
+                    self.spike_list2.draw()
+                    self.spear_list6.draw()
+
+            if TIMER < TIMER_INITIAL - 20:
+                if TIMER > TIMER_INITIAL - 28:
+                    self.spear_list7.draw()
 
             output = f"timer: {TIMER}"
             arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
@@ -368,10 +438,20 @@ class MyGame(arcade.Window):
             if TIMER > TIMER_INITIAL - 15:
                 self.spear_list5.update()
 
+        if TIMER_INITIAL - 15 > TIMER:
+            if TIMER > TIMER_INITIAL - 19:
+                self.spear_list6.update()
+
+        if TIMER_INITIAL - 20 > TIMER:
+            if TIMER > TIMER_INITIAL - 28:
+                self.spear_list7.update()
+
         if TIMER == TIMER_INITIAL - 7:
+            # Add sound effect
             GRAVITY_ON = True
 
         if TIMER == TIMER_INITIAL - 15:
+            # Add sound effect
             GRAVITY_ON = False
 
         if GRAVITY_ON is False:
@@ -388,26 +468,41 @@ class MyGame(arcade.Window):
         player_hit_list_spear2 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list2)
 
-
         player_hit_list_spear3 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list3)
 
         player_hit_list_spear4 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list4)
 
-        player_hit_list_spear5 = []
+        player_hit_list_spear5 = player_hit_list_spear6 = player_hit_list_spear7 = []
         if TIMER > TIMER_INITIAL - 15:
             player_hit_list_spear5 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                       self.spear_list5)
-        player_hit_list_spike1 = []
-        if TIMER >= TIMER_INITIAL - 6:
+
+        if TIMER > TIMER_INITIAL - 19:
+            player_hit_list_spear6 = arcade.check_for_collision_with_list(self.player_sprite_red,
+                                                                      self.spear_list6)
+        if TIMER > TIMER_INITIAL - 28:
+            player_hit_list_spear7 = arcade.check_for_collision_with_list(self.player_sprite_red,
+                                                                      self.spear_list7)
+
+        player_hit_list_spike1 = player_hit_list_spike2 = []
+        if TIMER > TIMER_INITIAL - 6:
             player_hit_list_spike1 = arcade.check_for_collision_with_list(self.player_sprite_red,
                                                                           self.spike_list1)
 
+        if TIMER < TIMER_INITIAL - 15:
+            player_hit_list_spike2 = arcade.check_for_collision_with_list(self.player_sprite_red,
+                                                                          self.spike_list2)
+
         if (len(player_hit_list_spear1) > 0 or len(player_hit_list_spear2) > 0
-                or len(player_hit_list_spike1) > 0 or len(player_hit_list_spear3) > 0
-                or len(player_hit_list_spear4) > 0 or len(player_hit_list_spear5) > 0):
+                or len(player_hit_list_spear3) > 0 or len(player_hit_list_spear4) > 0
+                or len(player_hit_list_spear5) > 0 or len(player_hit_list_spear6) > 0
+                or len(player_hit_list_spear7) > 0 or len(player_hit_list_spike1) > 0
+                or len(player_hit_list_spike2) > 0):
+            # Add sound effect
             PAGE = 4
+
         if PAGE == 3:
             TIMER_INCREMENT += 1
             if TIMER_INCREMENT >= 60:
