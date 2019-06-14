@@ -92,6 +92,7 @@ class GameOver:
             arcade.draw_texture_rectangle(400, 300, self.scale * self.texture_heart.width,
                                           self.scale * self.texture_heart.height, self.texture_heart, 0)
         elif self.counter > 46:
+            # Add sound effect
             arcade.draw_texture_rectangle(400, 300, self.texture.width,
                                           self.texture.height, self.texture, 0)
             if self.counter >= 80:
@@ -369,9 +370,11 @@ class MyGame(arcade.Window):
                 self.spear_list5.update()
 
         if TIMER == TIMER_INITIAL - 7:
+            # Add sound effect
             GRAVITY_ON = True
 
         if TIMER == TIMER_INITIAL - 15:
+            # Add sound effect
             GRAVITY_ON = False
 
         if GRAVITY_ON is False:
@@ -407,7 +410,9 @@ class MyGame(arcade.Window):
         if (len(player_hit_list_spear1) > 0 or len(player_hit_list_spear2) > 0
                 or len(player_hit_list_spike1) > 0 or len(player_hit_list_spear3) > 0
                 or len(player_hit_list_spear4) > 0 or len(player_hit_list_spear5) > 0):
+            # Add sound effect
             PAGE = 4
+
         if PAGE == 3:
             TIMER_INCREMENT += 1
             if TIMER_INCREMENT >= 60:
